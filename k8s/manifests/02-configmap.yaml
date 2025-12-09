@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-automation-config
+  namespace: test-automation
+  labels:
+    app: test-automation
+data:
+  node_count: "2"
+  max_retries: "5"
+  retry_delay: "10"
+  chrome_node_service: "http://chrome-node-service:4444"

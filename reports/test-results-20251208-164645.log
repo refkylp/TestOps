@@ -1,0 +1,15 @@
+Running tests...
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-7.4.3, pluggy-1.6.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /app
+collecting ... collected 5 items
+
+tests/test_insider.py::TestInsider::test_1_home_page_opened PASSED       [ 20%]
+tests/test_insider.py::TestInsider::test_2_careers_page_blocks PASSED    [ 40%]
+tests/test_insider.py::TestInsider::test_3_qa_jobs_filtering PASSED      [ 60%]
+tests/test_insider.py::TestInsider::test_4_job_details_verification PASSED [ 80%]
+tests/test_insider.py::TestInsider::test_5_view_role_redirect PASSED     [100%]
+
+========================= 5 passed in 87.31s (0:01:27) =========================
+Tests completed. Pod staying alive for log access...

@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Chrome Node (Selenium Grid) - Headless Chrome
+  chrome-node:
+    image: selenium/standalone-chrome:4.15.0
+    container_name: chrome-node-test
+    ports:
+      - "4444:4444"
+      - "7900:7900"  # VNC debug için (opsiyonel)
+    environment:
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=300
+      - START_XVFB=true
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_SCREEN_DEPTH=24
+      - SE_VNC_NO_PASSWORD=1
+      - SE_NO_VNC_PORT=7900
+    shm_size: 2gb
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Test Controller - Pytest testlerini çalıştırır
+  test-controller:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.controller
+    container_name: test-controller-test
+    depends_on:
+      chrome-node:
+        condition: service_healthy
+    environment:
+      - CHROME_NODE_SERVICE=http://chrome-node:4444
+      - MAX_RETRIES=5
+      - RETRY_DELAY=10
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

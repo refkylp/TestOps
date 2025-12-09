@@ -1,0 +1,8 @@
+Running tests...
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-7.4.3, pluggy-1.6.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /app
+collecting ... collected 5 items
+
+tests/test_insider.py::TestInsider::test_1_home_page_opened PASSED       [ 20%]

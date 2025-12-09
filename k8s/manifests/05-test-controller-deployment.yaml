@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-controller
+  namespace: test-automation
+  labels:
+    app: test-automation
+    component: test-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-automation
+      component: test-controller
+  template:
+    metadata:
+      labels:
+        app: test-automation
+        component: test-controller
+    spec:
+      containers:
+      - name: test-controller
+        image: 114195610881.dkr.ecr.us-east-1.amazonaws.com/test-controller4:latest
+        imagePullPolicy: Always
+        env:
+        - name: CHROME_NODE_SERVICE
+          valueFrom:
+            configMapKeyRef:
+              name: test-automation-config
+              key: chrome_node_service
+        command: ["/bin/sh"]
+        args:
+        - -c
+        - |
+          # Health check dosyası oluştur
+          echo "alive" > /tmp/health
+
+          # Testleri çalıştır
+          echo "Running tests..."
+          pytest -v --tb=short tests/ || true
+
+          # Test bitince health dosyasını koru (pod alive kalır)
+          echo "Tests completed. Pod staying alive for log access..."
+
+          # Sonsuza kadar bekle
+          tail -f /dev/null
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+        # Liveness Probe
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        # Startup Probe
+        startupProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/health
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 180

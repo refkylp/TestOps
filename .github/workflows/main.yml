@@ -1,0 +1,75 @@
+name: Build & Push to ECR
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  CHROME_REPO_NAME: chrome-node4
+  CONTROLLER_REPO_NAME: test-controller4
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Create ECR repositories if not exist
+        run: |
+          set -e
+          aws ecr describe-repositories --repository-names "$CHROME_REPO_NAME" --region $AWS_REGION >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name "$CHROME_REPO_NAME" --region $AWS_REGION
+
+          aws ecr describe-repositories --repository-names "$CONTROLLER_REPO_NAME" --region $AWS_REGION >/dev/null 2>&1 || \
+            aws ecr create-repository --repository-name "$CONTROLLER_REPO_NAME" --region $AWS_REGION
+
+      - name: Build & Push test-chrome image
+        run: |
+          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${CHROME_REPO_NAME}:latest"
+          echo "Building $IMAGE_URI"
+          docker build -f docker/Dockerfile.chromenode -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+
+      - name: Build & Push test-controller image
+        run: |
+          IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${CONTROLLER_REPO_NAME}:latest"
+          echo "Building $IMAGE_URI"
+          docker build -f docker/Dockerfile.controller -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+      
+      - name: Update Kubernetes manifests with ECR image URLs
+        run: |
+          CHROME_IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${CHROME_REPO_NAME}:latest"
+          CONTROLLER_IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${CONTROLLER_REPO_NAME}:latest"
+
+          sed -i "0,/image:/{s|image:.*|image: $CHROME_IMAGE_URI|}" k8s/manifests/03-chrome-node-deployment.yaml
+          sed -i "0,/image:/{s|image:.*|image: $CONTROLLER_IMAGE_URI|}" k8s/manifests/05-test-controller-deployment.yaml
+
+          echo "Manifest files updated with full ECR image paths"
+      - name: Commit and push manifest changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add k8s/manifests/*.yaml
+          git commit -m "Update image tags with latest ECR images" || echo "No changes to commit"
+          git push

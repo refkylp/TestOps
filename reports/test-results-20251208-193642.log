@@ -1,0 +1,71 @@
+Running tests...
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-7.4.3, pluggy-1.6.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /app
+collecting ... collected 5 items
+
+tests/test_insider.py::TestInsider::test_1_home_page_opened FAILED       [ 20%]
+tests/test_insider.py::TestInsider::test_2_careers_page_blocks FAILED    [ 40%]
+tests/test_insider.py::TestInsider::test_3_qa_jobs_filtering PASSED      [ 60%]
+tests/test_insider.py::TestInsider::test_4_job_details_verification FAILED [ 80%]
+tests/test_insider.py::TestInsider::test_5_view_role_redirect PASSED     [100%]
+
+=================================== FAILURES ===================================
+_____________________ TestInsider.test_1_home_page_opened ______________________
+tests/test_insider.py:13: in test_1_home_page_opened
+    assert home_page.is_home_page_opened(), "Home page is not opened"
+E   AssertionError: Home page is not opened
+E   assert False
+E    +  where False = <bound method HomePage.is_home_page_opened of <pages.home_page.HomePage object at 0x7f92966d36d0>>()
+E    +    where <bound method HomePage.is_home_page_opened of <pages.home_page.HomePage object at 0x7f92966d36d0>> = <pages.home_page.HomePage object at 0x7f92966d36d0>.is_home_page_opened
+---------------------------- Captured stdout setup -----------------------------
+Connecting to remote Chrome Node at: http://chrome-node-service:4444/wd/hub
+____________________ TestInsider.test_2_careers_page_blocks ____________________
+tests/test_insider.py:21: in test_2_careers_page_blocks
+    home_page.hover_company_menu()
+pages/home_page.py:27: in hover_company_menu
+    company_element = self.find_element(self.COMPANY_XPATH)
+pages/base_page.py:19: in find_element
+    return WebDriverWait(self.driver, timeout).until(
+/usr/local/lib/python3.11/site-packages/selenium/webdriver/support/wait.py:105: in until
+    raise TimeoutException(message, screen, stacktrace)
+E   selenium.common.exceptions.TimeoutException: Message: 
+E   Stacktrace:
+E   #0 0x56385221e5e3 <unknown>
+E   #1 0x563851ee10b7 <unknown>
+E   #2 0x563851f2ef53 <unknown>
+E   #3 0x563851f2f051 <unknown>
+E   #4 0x563851f749c4 <unknown>
+E   #5 0x563851f55f1d <unknown>
+E   #6 0x563851f71b3d <unknown>
+E   #7 0x563851f55cc3 <unknown>
+E   #8 0x563851f210e4 <unknown>
+E   #9 0x563851f220ae <unknown>
+E   #10 0x5638521e4ce1 <unknown>
+E   #11 0x5638521e8b7e <unknown>
+E   #12 0x5638521d24b5 <unknown>
+E   #13 0x5638521e97d6 <unknown>
+E   #14 0x5638521b5dbf <unknown>
+E   #15 0x56385220c748 <unknown>
+E   #16 0x56385220c917 <unknown>
+E   #17 0x56385221d773 <unknown>
+E   #18 0x7fa807b68ac3 <unknown>
+---------------------------- Captured stdout setup -----------------------------
+Connecting to remote Chrome Node at: http://chrome-node-service:4444/wd/hub
+_________________ TestInsider.test_4_job_details_verification __________________
+tests/test_insider.py:74: in test_4_job_details_verification
+    assert "Quality Assurance" in position, f"Position '{position}' does not contain 'Quality Assurance'"
+E   AssertionError: Position 'Senior Software QA Engineer (Remote)' does not contain 'Quality Assurance'
+E   assert 'Quality Assurance' in 'Senior Software QA Engineer (Remote)'
+---------------------------- Captured stdout setup -----------------------------
+Connecting to remote Chrome Node at: http://chrome-node-service:4444/wd/hub
+----------------------------- Captured stdout call -----------------------------
+[ERROR] Location filter operation failed: Message: 
+
+=========================== short test summary info ============================
+FAILED tests/test_insider.py::TestInsider::test_1_home_page_opened - Assertio...
+FAILED tests/test_insider.py::TestInsider::test_2_careers_page_blocks - selen...
+FAILED tests/test_insider.py::TestInsider::test_4_job_details_verification - ...
+=================== 3 failed, 2 passed in 131.44s (0:02:11) ====================
+Tests completed. Pod staying alive for log access...

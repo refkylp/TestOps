@@ -1,0 +1,5 @@
+pytest==7.4.3
+selenium==4.20.0
+webdriver-manager==4.0.1
+jproperties==2.1.1
+requests==2.31.0

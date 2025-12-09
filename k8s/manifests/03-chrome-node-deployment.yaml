@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chrome-node
+  namespace: test-automation
+  labels:
+    app: test-automation
+    component: chrome-node
+spec:
+  replicas: 2  # deploy.py ile dinamik olarak ayarlanabilir (1-5 arası)
+  selector:
+    matchLabels:
+      app: test-automation
+      component: chrome-node
+  template:
+    metadata:
+      labels:
+        app: test-automation
+        component: chrome-node
+    spec:
+      containers:
+      - name: chrome-node
+        image: 114195610881.dkr.ecr.us-east-1.amazonaws.com/chrome-node4:latest
+        ports:
+        - containerPort: 4444
+          name: selenium
+        env:
+        - name: SE_NODE_MAX_SESSIONS
+          value: "1"
+        - name: SE_NODE_SESSION_TIMEOUT
+          value: "300"
+        - name: START_XVFB
+          value: "true"
+        - name: SE_SCREEN_WIDTH
+          value: "1920"
+        - name: SE_SCREEN_HEIGHT
+          value: "1080"
+        - name: SE_SCREEN_DEPTH
+          value: "24"
+        - name: SE_VNC_NO_PASSWORD
+          value: "1"
+        - name: SE_NO_VNC_PORT
+          value: "7900"
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
+        volumeMounts:
+        - name: dshm
+          mountPath: /dev/shm
+        livenessProbe:
+          httpGet:
+            path: /wd/hub/status
+            port: 4444
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /wd/hub/status
+            port: 4444
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 2Gi
